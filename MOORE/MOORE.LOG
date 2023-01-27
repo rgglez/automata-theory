@@ -1,0 +1,29 @@
+?((/* --------------------------------------------------------------------- ))
+?((/*                         Maquina de Moore                              ))
+?((/* Realizado por: Rodolfo Gonzalez Gonzalez.                             ))
+?((/* --------------------------------------------------------------------- ))
+
+?((/* Carga el archivo de definicion de la maq. de Moore                    ))
+
+?((LOAD deltas))
+
+((pertenece x (x|y)))
+((pertenece x (y|x1))
+   (pertenece x x1))
+
+?((/* Clausula principal. x=estado inicial, z1z2=cadena a analizar          ))
+
+((Moore x (z1|z2))
+    (Q z10)
+    (pertenece x z10)
+    (sigma z11)
+    (pertenece z1 z11)
+    (lambda x z22)
+    (PP z22)
+    (delta x z1 y)
+    (Moore y z2)
+)
+((Moore x ())
+    (lambda x y)
+    (PP y)
+)

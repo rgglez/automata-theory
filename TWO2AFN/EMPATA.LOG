@@ -1,0 +1,117 @@
+?((/* --------------------------------------------------------------------- ))
+?((/* La secuencia nula empata a la derecha y empata a la izquierda con la  ))
+?((/* secuencia nula                                                        ))
+?((/* --------------------------------------------------------------------- ))
+
+((emp-der z () ()))
+((emp-izq z () ()))
+
+?((/* --------------------------------------------------------------------- ))
+?((/* Si q3,...,qk empata a la derecha con p1,...,pl y "delta(q1,a)=(q2,L)" ))
+?((/* entonces q1,...,qk empata a la derecha con p1,...,pl                  ))
+?((/* --------------------------------------------------------------------- ))
+
+((emp-der z (x1|x2) y)
+    (delta x1 z (y3|y4))
+    (car x2 x20)
+    (EQ y3 x20)
+    (EQ y4 (L))
+    (cdr x2 x21)
+    (emp-der z x21 y)
+)
+
+?((/* --------------------------------------------------------------------- ))
+?((/* Si q2,..,qk empata a la izquierda con p2,...,pl y "delta(q1,a)=(p1,R)"))
+?((/* entonces q1,...qk empata a la derecha con p1,...,pl                   ))
+?((/* --------------------------------------------------------------------- ))
+
+((emp-der z (x1|x2) (y1|y2))
+    (delta x1 z (y3|y4))
+    (EQ y1 y3)
+    (EQ y4 (R))
+    (emp-izq z x2 y2)
+)
+
+?((/* --------------------------------------------------------------------- ))
+?((/* Si q1,..,qk empata a la izquierda con p3,...,pl y "delta(p1,q)=(p2,R)"))
+?((/* entonces q1,...,qk empata a la izquierda con p1,...,pl                ))
+?((/* --------------------------------------------------------------------- ))
+
+((emp-izq z x (y1|y2))
+    (delta y1 z (y3|y4))
+    (car y2 y20)
+    (EQ y3 y20)
+    (EQ y4 (R))
+    (cdr y2 y21)
+    (emp-izq z x y21)
+)
+
+?((/* --------------------------------------------------------------------- ))
+?((/* Si q2,...,qk empata a la derecha con p2,...,pl y "delta(p1,a)=(q1,L)" ))
+?((/* entonces q1,...,qk empata a la izquierda con p1,...,pl                ))
+?((/* --------------------------------------------------------------------- ))
+
+((emp-izq z (x1|x2) (y1|y2))
+    (delta y1 z (y3|y4))
+    (EQ y3 x1)
+    (EQ y4 (L))
+    (emp-der z x2 y2)
+)
+
+?((/* --------------------------------------------------------------------- ))
+
+((halla-emp-der1 z x (x1|x2) z3)
+    (emp-der z x x1)
+    (halla-emp-der1 z x x2 z2)
+    (union z2 (x1) z3)
+)
+
+((halla-emp-der1 z x (x1|x2) z1)
+    (halla-emp-der1 z x x2 z1)
+)
+
+((halla-emp-der1 z x () ()))
+
+?((/* --------------------------------------------------------------------- ))
+
+((halla-emp-der z (x1|x2) y)
+    (halla-emp-der1 z x1 y z1)
+    (NOT EQ z1 ())
+    (ADDCL ((delta-prima x1 z z1)))
+    (halla-emp-der z x2 y)
+)
+
+((halla-emp-der z (x1|x2) y)
+    (halla-emp-der z x2 y)
+)
+
+((halla-emp-der z () y))
+
+?((/* --------------------------------------------------------------------- ))
+
+((halla-delta-prima (x1|x2) y)
+    (halla-emp-der x1 y y)
+    (halla-delta-prima x2 y)
+)
+((halla-delta-prima () y))
+
+?((/* --------------------------------------------------------------------- ))
+
+((seq-cruce ((q0) (q1) (q2)
+             (q0 q3 q1) (q0 q3 q2) (q1 q3 q0) (q1 q3 q2)
+             (q2 q3 q0) (q2 q3 q1) (q0 q4 q1) (q0 q4 q2)
+             (q1 q4 q0) (q1 q4 q2) (q2 q4 q0) (q2 q4 q1)
+             (q0 q3 q1 q4 q2) (q0 q4 q1 q3 q2) (q1 q3 q0 q4 q2)
+             (q1 q4 q0 q3 q2) (q2 q3 q0 q4 q1) (q2 q4 q0 q3 q1)
+             (q2 q3 q1 q4 q0) (q2 q4 q1 q3 q0) (q0 q3 q2 q4 q1)
+             (q0 q4 q2 q3 q1) (q1 q3 q2 q4 q0) (q1 q4 q2 q3 q0))
+))
+
+?((/* --------------------------------------------------------------------- ))
+
+((main)
+    (seq-cruce x)
+    (sigma x10)
+    (halla-delta-prima x10 x)
+    (LIST delta-prima)
+)

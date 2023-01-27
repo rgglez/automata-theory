@@ -1,0 +1,96 @@
+?((/* --------------------------------------------------------------------- ))
+?((/*        Equivalencia entre AFN y AFD: ejemplo visto en clase           ))
+?((/* Realizado por: Rodolfo Gonzalez Gonzalez.                             ))
+?((/* --------------------------------------------------------------------- ))
+
+?((/* Este programa ejemplifica el uso del programa AFN2AFD.LOG para hallar ))
+?((/* el AFD equivalente a un AFN.                                          ))
+
+?((/* --------------------------------------------------------------------- ))
+?((/* carga archivos con rutinas auxiliares                                 ))
+?((/* --------------------------------------------------------------------- ))
+
+?((LOAD LISTAS))
+?((LOAD POTENCIA))
+
+?((/* --------------------------------------------------------------------- ))
+?((/* hecho dados por el usuario: Q, sigma, F, estado                       ))
+?((/* --------------------------------------------------------------------- ))
+
+((Q (q0 q1)))
+
+((sigma (0 1)))
+
+((F (q1)))
+
+((estado q0 0 (q0 q1)))
+((estado q0 1 (q1)))
+((estado q1 0 ()))
+((estado q1 1 (q0 q1)))
+
+?((/* --------------------------------------------------------------------- ))
+?((/* clausula que resuelve una parte del AFN, dado como terminos de entrada))
+?((/* una lista y un simbolo de sigma.                                      ))
+?((/* --------------------------------------------------------------------- ))
+
+((delta2 (x|x1) y z)
+    (estado x y z2)
+    (delta2 x1 y z3)
+    (union z2 z3 z))
+((delta2 () y ()))
+
+?((/* --------------------------------------------------------------------- ))
+?((/* clausulas para hallar la tabla de transiciones del AFD coustruyendose ))
+?((/  i.e. delta prima                                                      ))
+?((/* --------------------------------------------------------------------- ))
+
+((fdeltap2 () y))
+((fdeltap2 (x1|x2) y)
+    (delta2 x1 y z)
+    (ADDCL ((delta-prima x1 y z)))
+    (fdeltap2 x2 y))
+
+((fdeltap1 x ()))
+((fdeltap1 x (y1|y2))
+   (fdeltap2 x y1)
+   (fdeltap1 x y2))
+
+?((/* --------------------------------------------------------------------- ))
+?((/* clausula para hallar F'                                               ))
+?((/* --------------------------------------------------------------------- ))
+
+((quien-F-prima x () ()))
+((quien-F-prima x (y1|y2) z)
+    (interseccion x y1 z1)
+    (NOT EQ z1 ())
+    (union y1 () z2)
+    (quien-F-prima x y2 z3)
+    (union (z2) z3 z))
+((quien-F-prima x (y1|y2) z)
+    (quien-F-prima x y2 z))
+
+?((/* --------------------------------------------------------------------- ))
+?((/* clausula principal para hacer la consulta, dado estado inicial q0     ))
+?((/* --------------------------------------------------------------------- ))
+
+((afn2afd x)
+    (ADDCL ((q0-prima (x))))
+    (PP q0 prima es (x))
+
+    (sigma z1)
+    (PP Sigma para el afd es z1)
+
+    (Q z2)
+    (cp z2 z3)
+    (ADDCL ((Q-prima z3)))
+    (PP Q prima es z3)
+
+    (F z4)
+    (quien-F-prima z4 z3 z)
+    (ADDCL ((f-prima z)))
+    (PP F prima es z)
+
+    (PP Calculando delta prima... )
+    (fdeltap1 z3 z1)
+    (PP Delta prima es: )
+    (LIST delta-prima))

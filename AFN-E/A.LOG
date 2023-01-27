@@ -1,0 +1,68 @@
+?((/* Ejemplo del programa AFN-E.LOG, Automata Finito No-Deterministico con ))
+?((/* Movimientos Epsilon.                                                  ))
+
+?((/* Este programa ejemplifica el uso del programa AFN-E                   ))
+
+?((LOAD listas))
+
+?((/* hechos que definen un AFN con movimientos epsilon. Estos son dados por))
+?((/* el usuario.                                                           ))
+
+((Q (q0 q1 q2)))
+
+((sigma (0 1 2 ())))
+
+((F (q2)))
+
+((estado q0 0 (q0)))
+((estado q0 1 ()))
+((estado q0 2 ()))
+((estado q0 () (q1)))
+((estado q1 0 ()))
+((estado q1 1 (q1)))
+((estado q1 2 ()))
+((estado q1 () (q2)))
+((estado q2 0 ()))
+((estado q2 1 ()))
+((estado q2 2 (q2)))
+((estado q2 () ()))
+
+?((/* clausula para obtener la CERRADURA-epsilon de un conjunto de estados  ))
+
+((CERR2-e (x1|x2) z)
+    (estado x1 () z1)
+    (CERR2-e z1 z2)
+    (union z1 z2 z3)
+    (union (x1) z3 z))
+((CERR2-e () ()))
+
+((CERR1-e (x1|x2) z)
+    (CERR2-e (x1) z1)
+    (CERR1-e x2 z2)
+    (union z1 z2 z))
+((CERR1-e () ()))
+
+?((/* clausulas para resolver un AFN                                        ))
+
+((delta1 x (y|y1) z)
+    (delta2 x y z1)
+    (CERR1-e z1 z2)
+    (delta1 z2 y1 z))
+((delta1 x () x))
+
+((delta2 (x|x1) y z)
+    (estado x y z2)
+    (delta2 x1 y z3)
+    (union z2 z3 z))
+((delta2 () y ()))
+
+?((/* clausula para hacer la consulta                                       ))
+
+((fdelta x y)
+    (CERR1-e (x) x1)
+    (delta1 x1 y z)
+    (F z1)
+    (interseccion z z1 z2)
+    (NOT EQ z2 ())
+    (PP Estados a los que se llego: z)
+    (PP Estado final: z2))

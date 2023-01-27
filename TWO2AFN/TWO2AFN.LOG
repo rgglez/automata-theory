@@ -1,0 +1,279 @@
+?((/* --------------------------------------------------------------------- ))
+?((/* Realizado por: Rodolfo Gonz lez Gonz lez.                             ))
+?((/* --------------------------------------------------------------------- ))
+
+?((LOAD listas))
+
+?((/* ********************************************************************* ))
+?((/* Definicion del automata finito deterministico de dos caminos, dada    ))
+?((/* por el usuario.                                                       ))
+?((/* ********************************************************************* ))
+
+((sigma (0 1)))
+((F (q2)))
+
+?((LOAD deltas))
+
+((delta () () (() R)))
+((delta () () (() L)))
+
+?((/* ********************************************************************* ))
+?((/* Fase 1, hallar los estados con los que la cabeza lectora se mueve a   ))
+?((/* izquierda y derecha en la cinta.                                      ))
+?((/* ********************************************************************* ))
+
+((halla-derecha x)
+    (/* Halla estados con movimiento a la derecha )
+
+    (delta x1 x2 (x3|(R)))
+    (NOT EQ x3 ())
+    (DELCL ((delta x1 x2 (x3|(R)))))
+    (halla-derecha x4)
+    (union (x3) x4 x)
+)
+((halla-derecha ()))
+
+?((/* --------------------------------------------------------------------- ))
+
+((halla-izquierda x)
+    (/* Halla estados con movimiento a la izquierda )
+
+    (delta x1 x2 (x3|(L)))
+    (NOT EQ x3 ())
+    (DELCL ((delta x1 x2 (x3|(L)))))
+    (halla-izquierda x4)
+    (union (x3) x4 x)
+)
+((halla-izquierda ()))
+
+?((/* --------------------------------------------------------------------- ))
+
+((enlista (x1|x2)  y)
+    (union ((x1)) () y1)
+    (enlista x2 y2)
+    (union y1 y2 y)
+)
+((enlista () ()))
+
+?((/* --------------------------------------------------------------------- ))
+?((/* Hallar el conjunto de estados finales para el AFN construyendose      ))
+?((/* --------------------------------------------------------------------- ))
+
+((halla-F-prima (x1|x2) y)
+    (F z)
+    (interseccion x1 z x)
+    (union x () y1)
+    (halla-F-prima x2 y2)
+    (union y1 y2 y)
+)
+
+((halla-F-prima (x1|x2) y)
+    (halla-F-prima x2 y)
+)
+
+((halla-F-prima () ()))
+
+?((/* ********************************************************************* ))
+?((/* Fase 2, hallar las secuencias de cruce validas                        ))
+?((/* ********************************************************************* ))
+
+((seccru (x|x1) y z X)
+    (seccru1 x y z X1)
+    (seccru x1 y z X2)
+    (apen X1 X2 X))
+
+((seccru () y z ()))
+
+?((/* --------------------------------------------------------------------- ))
+
+((seccru1 x (y|y1) z X)
+    (pertD x y)
+    (seccru1 x y1 z X))
+
+((seccru1 x (y|y1) z X)
+    (seccru2 x y z X1)
+    (seccru1 x y1 z X2)
+    (apen X1 X2 X))
+
+((seccru1 x () z ()))
+
+?((/* --------------------------------------------------------------------- ))
+
+((seccru2 x y (z|z1) X)
+    (pertL z y)
+    (seccru2 x y z1 X))
+
+((seccru2 x y (z|z1) X)
+    (seccru2 x y z1 X1)
+    (apen (x z) y y1)
+    (apen (y1) X1 X))
+
+((seccru2 x y () ()))
+
+?((/* --------------------------------------------------------------------- ))
+
+((obtenseccru x y z () (X)))
+
+((obtenseccru x y z X (Y|Y1))
+    (seccru x y z X1)
+    (obtenseccru x X1 z X2 Y1)
+    (apen X1 X2 X))
+
+?((/* ********************************************************************* ))
+?((/* Fase 3, hallar los empates-derecha de cada secuencia de cruce v lida  ))
+?((/* ********************************************************************* ))
+
+?((/* --------------------------------------------------------------------- ))
+?((/* La secuencia nula empata a la derecha y empata a la izquierda con la  ))
+?((/* secuencia nula                                                        ))
+?((/* --------------------------------------------------------------------- ))
+
+((emp-der z () ()))
+((emp-izq z () ()))
+
+?((/* --------------------------------------------------------------------- ))
+?((/* Si q3,...,qk empata a la derecha con p1,...,pl y "delta(q1,a)=(q2,L)" ))
+?((/* entonces q1,...,qk empata a la derecha con p1,...,pl                  ))
+?((/* --------------------------------------------------------------------- ))
+
+((emp-der z (x1|x2) y)
+    (delta x1 z (y3|(L)))
+    (car x2 x20)
+    (EQ y3 x20)
+    (cdr x2 x21)
+    (emp-der z x21 y)
+)
+
+?((/* --------------------------------------------------------------------- ))
+?((/* Si q2,..,qk empata a la izquierda con p2,...,pl y "delta(q1,a)=(p1,R)"))
+?((/* entonces q1,...qk empata a la derecha con p1,...,pl                   ))
+?((/* --------------------------------------------------------------------- ))
+
+((emp-der z (x1|x2) (y1|y2))
+    (delta x1 z (y3|(R)))
+    (EQ y1 y3)
+    (emp-izq z x2 y2)
+)
+
+?((/* --------------------------------------------------------------------- ))
+?((/* Si q1,..,qk empata a la izquierda con p3,...,pl y "delta(p1,q)=(p2,R)"))
+?((/* entonces q1,...,qk empata a la izquierda con p1,...,pl                ))
+?((/* --------------------------------------------------------------------- ))
+
+((emp-izq z x (y1|y2))
+    (delta y1 z (y3|(R)))
+    (car y2 y20)
+    (EQ y3 y20)
+    (cdr y2 y21)
+    (emp-izq z x y21)
+)
+
+?((/* --------------------------------------------------------------------- ))
+?((/* Si q2,...,qk empata a la derecha con p2,...,pl y "delta(p1,a)=(q1,L)" ))
+?((/* entonces q1,...,qk empata a la izquierda con p1,...,pl                ))
+?((/* --------------------------------------------------------------------- ))
+
+((emp-izq z (x1|x2) (y1|y2))
+    (delta y1 z (y3|(L)))
+    (EQ y3 x1)
+    (emp-der z x2 y2)
+)
+
+?((/* --------------------------------------------------------------------- ))
+
+((halla-emp-der1 z x (x1|x2) z3)
+    (emp-der z x x1)
+    (halla-emp-der1 z x x2 z2)
+    (union z2 (x1) z3)
+)
+
+((halla-emp-der1 z x (x1|x2) z1)
+    (halla-emp-der1 z x x2 z1)
+)
+
+((halla-emp-der1 z x () ()))
+
+?((/* --------------------------------------------------------------------- ))
+
+((halla-emp-der z (x1|x2) y)
+    (halla-emp-der1 z x1 y z1)
+    (NOT EQ z1 ())
+    (ADDCL ((delta-prima x1 z z1)))
+    (halla-emp-der z x2 y)
+)
+
+((halla-emp-der z (x1|x2) y)
+    (halla-emp-der z x2 y)
+)
+
+((halla-emp-der z () y))
+
+?((/* --------------------------------------------------------------------- ))
+?((/* hallar Delta prima                                                    ))
+?((/* --------------------------------------------------------------------- ))
+
+((halla-delta-prima (x1|x2) y)
+    (halla-emp-der x1 y y)
+    (halla-delta-prima x2 y)
+)
+((halla-delta-prima () y))
+
+?((/* ********************************************************************* ))
+?((/* Clausula principal                                                    ))
+?((/* ********************************************************************* ))
+
+((main z)
+    (/* Primera parte, hallar los estados con movimientos a izq. y der       )
+    (/* y hallar el conjunto de estados finales para el AFN                  )
+
+    (halla-derecha x1)
+    (halla-izquierda x2)
+    (enlista x1 x3)
+    (halla-F-prima x3 z1)
+    (ADDCL ((F-prima z1)))
+
+    (/* Segunda parte, hallar todas las secuencias de cruce v lidas          )
+
+    (obtenseccru x1 x3 x2 X x1)
+    (union x3 X z2)
+    (ADDCL ((Q-prima z2)))
+
+    (/* Tercera parte, hallar los empates-derecha de las secuencias de cruce )
+    (/* validas, las cuales son los estados del AFN, y formar la nueva       )
+    (/* tabla de transiciones                                                )
+
+    (/* liberar memoria borrando clausulas no usadas mas                     )
+
+    (KILL halla-derecha)
+    (KILL halla-izquierda)
+    (KILL enlista)
+    (KILL halla-F-prima)
+    (KILL seccru)
+    (KILL seccru1)
+    (KILL seccru2)
+    (KILL obtenseccru)
+
+    (/* recargar de disco el archivo con la tabla de transiciones para el    )
+    (/* AFD 2-way dado por el usuario                                        )
+
+    (KILL delta)
+    (LOAD deltas)
+
+    (Q-prima y1)
+    (sigma x10)
+    (halla-delta-prima x10 y1)
+
+    (/* Desplegar resultados )
+
+    (PP RESULTADOS  ) (PP ************************************************** )
+    (PP Sigma es:   ) (PP x10) (PP)
+    (PP Q prima es: ) (PP y1) (PP)
+    (PP F prima es: ) (PP z1) (PP)
+    (PP q0 prima es:) (PP (z)) (PP)
+    (PP Delta prima es la sgte. NOTA: solo se listan los empates-derechos,   )
+    (PP donde no se se¤ale un empate quiere decir que este no existe, pero   )
+    (PP debe considerarse para la tabla de transiciones del AFN como ''no hay)
+    (PP transicion ante el simbolo S''                                       )
+
+    (LIST delta-prima)
+)

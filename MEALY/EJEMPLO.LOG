@@ -1,0 +1,19 @@
+?((/* Ejemplo de archivo de definicion de una maq. de Mealy                 ))
+?((/* Este archivo debe llamarse deltas.log                                 ))
+
+((sigma (0 1)))
+((Q (q0 p0 p1)))
+
+((delta q0 0 p0))
+((delta q0 1 p1))
+((delta p0 0 p0))
+((delta p0 1 p1))
+((delta p1 0 p0))
+((delta p1 1 p1))
+
+((lambda q0 0 n))
+((lambda q0 1 n))
+((lambda p0 0 s))
+((lambda p0 1 n))
+((lambda p1 0 n))
+((lambda p1 1 s))

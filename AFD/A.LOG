@@ -1,0 +1,38 @@
+?((/* Ejemplo del programa AFD                 ))
+?((/* Realizado por: Rodolfo Gonzalez Gonzalez ))
+?((/* 3/Septiembre/1996                        ))
+
+?((/* Ejemplifica el uso del programa AFD.LOG ))
+
+((pertenece x (x|y)))
+((pertenece x (y|x1))
+   (pertenece x x1))
+
+((sigma (0 1)))
+
+((Q (q0 q1 q2 q3)))
+
+((F (q0)))
+
+((delta q0 0 q2))
+((delta q0 1 q1))
+((delta q1 0 q3))
+((delta q1 1 q0))
+((delta q2 0 q0))
+((delta q2 1 q3))
+((delta q3 0 q1))
+((delta q3 1 q2))
+
+((delta x () x)
+    (F z12)
+    (pertenece x z12)
+    (PP La cadena de entrada si pertenece al lenguaje)
+    (PP Estado final al que se llego es: x)
+)
+((delta x (z1|z2) y)
+    (Q z10)
+    (pertenece x z10)
+    (sigma z11)
+    (pertenece z1 z11)
+    (delta x z1 y)
+    (delta y z2 y1))

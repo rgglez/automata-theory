@@ -1,0 +1,44 @@
+?((/* Rutinas generales para el manejo de listas                    ))
+?((/* Realizado por: Rodolfo González González. ))
+
+((append () X X))
+((append (X|Y) Z (X|x))
+  (append Y Z x))
+
+((pertenece x (x|y)))
+((pertenece x (y|x1))
+   (pertenece x x1))
+
+((union () y y))
+((union (x1|x2) y z)
+   (pertenece x1 y)
+   (union x2 y z))
+((union (x1|x2) y (x1|z1))
+   (union x2 y z1))
+
+((interseccion () y ()))
+((interseccion (x|x1) y (x|z))
+   (pertenece x y)
+   (interseccion x1 y z))
+((interseccion (x|x1) y z1)
+   (interseccion x1 y z1))
+
+((quita-frente (x1|x2) x2))
+((quita-frente () ()))
+
+((invierte () ()))
+((invierte (x1|x2) y)
+    (append () (x1) y1)
+    (invierte x2 y2)
+    (append y2 y1 y)
+)
+
+((saca x (x1|x2) x1)
+   (DELCL x 1)
+   (ADDCL ((x x2)))
+)
+
+((car (x1|x2) x1))
+
+((cdr (x1|x2) x2))
+((cdr () ())

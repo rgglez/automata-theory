@@ -1,0 +1,63 @@
+?((LOAD listas))
+
+((seccru (x|x1) y z X)
+         (seccru1 x y z X1)
+         (seccru x1 y z X2)
+         (apen X1 X2 X))
+
+((seccru () y z ()))
+
+((seccru1 x (y|y1) z X)
+          (pertD x y)
+          (seccru1 x y1 z X))
+
+((seccru1 x (y|y1) z X)
+          (seccru2 x y z X1)
+          (seccru1 x y1 z X2)
+          (apen X1 X2 X))
+
+((seccru1 x () z ()))
+
+((seccru2 x y (z|z1) X)
+          (pertL z y)
+          (seccru2 x y z1 X))
+
+((seccru2 x y (z|z1) X)
+          (seccru2 x y z1 X1)
+          (apen (x z) y y1)
+          (apen (y1) X1 X))
+
+((seccru2 x y () ()))
+
+((apen (x|y) z (x|x1))
+       (apen y z x1))
+
+((apen () x x))
+
+((pertD x (x|y)))
+
+((pertD x (y|z))
+       (quita z z1)
+       (pertD x z1))
+
+((quita (x|x1) x1))
+
+((pertL x y)
+        (quita y (x|y2)))
+
+((pertL x (y|z))
+       (quita z z1)
+       (pertL x z1))
+
+((obtenseccru x y z () (X)))
+
+((obtenseccru x y z X (Y|Y1))
+              (seccru x y z X1)
+              (obtenseccru x X1 z X2 Y1)
+              (apen X1 X2 X))
+
+((bere)
+    (obtenseccru (q0 q1 q2) ((q0) (q1) (q2)) (q3 q4 q5) X (q0 q1 q2))
+    (union ((q0) (q1) (q2)) X x1)
+    (PP x1)
+)

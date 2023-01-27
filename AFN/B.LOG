@@ -1,0 +1,63 @@
+?((/* Ejemplo del uso del programa AFN version 2.0 ))
+?((/* Realizado por: Rodolfo Gonz lez Gonz lez     ))
+
+?((/* Este programa ejemplifica el uso del programa          ))
+?((/* AFN.LOG version 2.0, usando el ejemplo visto en clase. ))
+?((/* Para hacer la consulta utilize la relacion fdelta, por ))
+?((/* ejemplo: "?((fdelta q0 (0 1 0 0 1)))".                 ))
+
+((pertenece x (x|y)))
+((pertenece x (y|x1))
+   (pertenece x x1))
+
+((union () y y))
+((union (x1|x2) y z)
+   (pertenece x1 y)
+   (union x2 y z))
+((union (x1|x2) y (x1|z1))
+   (NOT pertenece x1 y)
+   (union x2 y z1))
+
+((interseccion () y ()))
+((interseccion (x|x1) y (x|z))
+   (pertenece x y)
+   (interseccion x1 y z))
+((interseccion (x|x1) y z1)
+   (NOT pertenece x y)
+   (interseccion x1 y z1))
+
+((Q (q0 q1 q2 q3 q4)))
+
+((sigma (1 0)))
+
+((F (q2 q4)))
+
+((estado q0 0 (q0 q3)))
+((estado q0 1 (q0 q1)))
+((estado q1 0 ()))
+((estado q1 1 (q2)))
+((estado q2 0 (q2)))
+((estado q2 1 (q2)))
+((estado q3 0 (q4)))
+((estado q3 1 ()))
+((estado q4 0 (q4)))
+((estado q4 1 (q4)))
+
+((fdelta x y)
+    (delta1 (x) y z)
+    (F z1)
+    (interseccion z z1 z2)
+    (NOT EQ z2 ())
+    (PP Estados a los que se llego: z)
+    (PP Estado final: z2))
+
+((delta1 x (y|y1) z)
+    (delta2 x y z1)
+    (delta1 z1 y1 z))
+((delta1 x () x))
+
+((delta2 (x|x1) y z)
+    (estado x y z2)
+    (delta2 x1 y z3)
+    (union z2 z3 z))
+((delta2 () y ()))

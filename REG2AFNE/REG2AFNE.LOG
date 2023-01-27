@@ -1,0 +1,344 @@
+?((/* --------------------------------------------------------------------- ))
+?((/* Programa REG2AFNE.LOG - Obtiene el AFN-E equivalente a una expresion  ))
+?((/* regular dada.                                                         ))
+?((/* Realizado por: Rodolfo Gonz lez Gonz lez.                             ))
+?((/* --------------------------------------------------------------------- ))
+
+?((/* Para realizar la consulta, hagalo con la clausula analiza que toma    ))
+?((/* como argumento la expresion regular a analizar completamente          ))
+?((/* parentizada, en forma de lista de listas.                             ))
+
+?((LOAD listas))
+
+?((/* --------------------------------------------------------------------- ))
+?((/* clausula para eliminar el primer elemento de una lista que es termino ))
+?((/* de la relacion x, quedando solo x2, dicho primer elemento queda en x1 ))
+?((/* --------------------------------------------------------------------- ))
+
+((saca x (x1|x2) x1)
+   (DELCL x 1)
+   (ADDCL ((x x2)))
+)
+
+?((/* --------------------------------------------------------------------- ))
+?((/* clausulas para obtener el primer elemento de una lista en x1 y el     ))
+?((/* resto de una lista en x2, respectivamente                             ))
+?((/* --------------------------------------------------------------------- ))
+
+((car (x1|x2) x1))
+
+((cdr (x1|x2) x2))
+
+?((/* --------------------------------------------------------------------- ))
+?((/* clausulas cuyo termino es una lista conteniendo estados q y f, que    ))
+?((/* seran usados en la generacion de nuevos automatas. Cuando un estado   ))
+?((/* es requerido se toma de aqui y se le elimina de la lista.             ))
+?((/* --------------------------------------------------------------------- ))
+
+((mem-q (q0 q1 q2 q3 q4 q5 q6 q7 q8 q9 q10 q11 q12 q13 q14 q15 q16 q17 q18 q19 q20 q21 q22 q23 q24 q25)))
+
+((mem-f (f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12 f13 f14 f15 f16 f17 f18 f19 f20 f21 f22 f23 f24 f25)))
+
+?((/* --------------------------------------------------------------------- ))
+?((/* alfabeto sigma dado por el usuario                                    ))
+?((/* --------------------------------------------------------------------- ))
+
+((sigma (0 1)))
+
+?((/* --------------------------------------------------------------------- ))
+?((/* clausulas para generar los deltas para el caso sinple sin operadores  ))
+?((/* --------------------------------------------------------------------- ))
+
+((simbolo x)
+    (/* trata el caso cuando x es simbolo de sigma... )
+
+    (sigma z1)
+    (pertenece x z1)
+
+    (/* obtener estado inicial... )
+
+    (mem-q z2)
+    (saca mem-q z2 x1)
+
+    (/* obtener estado final... )
+
+    (mem-f z3)
+    (saca mem-f z3 y1)
+
+    (/* agregar delta... )
+
+    (ADDCL ((delta x1 x y1)))
+
+    (/* crear Q... )
+
+    (union (x1) () z4)
+    (union (y1) z4 z5)
+
+    (/* crear M para este caso basico, donde z5 es Q, z1 es sigma, x1 es q0, )
+    (/* y1 es qf )
+
+    (ADDCL ((M z5 z1 x1 y1)) 0)
+)
+
+?((/* --------------------------------------------------------------------- ))
+
+((simbolo x)
+    (/* trata el caso cuando x es epsilon )
+
+    (EQ x ())
+
+    (/* obtener estado inicial... )
+
+    (mem-q z2)
+    (saca mem-q z2 x1)
+
+    (/* agregar delta... )
+
+    (ADDCL ((delta x1 () x1)))
+
+    (/* crear Q... )
+
+    (union (x1) () z5)
+
+    (/* crear M para este caso basico, donde z5 es Q, z1 es sigma, x1 es q0, )
+    (/* y1 es qf )
+
+    (sigma z1)
+    (ADDCL ((M z5 z1 x1 x1)) 0)
+)
+
+?((/* --------------------------------------------------------------------- ))
+
+((simbolo x)
+    (/* trata el caso cuando x es vacio )
+
+    (EQ x @)
+
+    (/* obtener estado inicial... )
+
+    (mem-q z2)
+    (saca mem-q z2 x1)
+
+    (/* obtener estado final... )
+
+    (mem-f z3)
+    (saca mem-f z3 y1)
+
+    (/* agregar delta... )
+
+    (ADDCL ((delta x1 @ y1)))
+
+    (/* crear Q... )
+
+    (union (x1) () z4)
+    (union (y1) z4 z5)
+
+    (/* crear M para este caso basico, donde z5 es Q, z1 es sigma, x1 es q0, )
+    (/* y1 es qf )
+
+    (sigma z1)
+    (ADDCL ((M z5 z1 x1 y1)) 0)
+)
+
+?((/* --------------------------------------------------------------------- ))
+?((/* clausula para tratar el caso r=r1r2. Se usa como operador de concate  ))
+?((/* nacion el signo . para evitar ambiguedades.                           ))
+?((/* --------------------------------------------------------------------- ))
+
+((concatenacion (x1|x2))
+    (/* verificar si esto es una concatenacion )
+
+    (car x2 y1)
+    (EQ y1 .)
+
+    (/* analiza el termino de la izquierda )
+
+    (analiza (x1))
+
+    (/* si lo es, analiza el termino de la derecha )
+
+    (cdr x2 y2)
+    (analiza y2)
+
+    (/* genera nuevo automata M para esta concatenacion )
+
+    (/* borra automatas de ambos terminos de la concatenacion, antes recupera )
+    (/* sus entradas )
+
+    (M z1 z2 z3 z4)
+    (DELCL ((M z1 z2 z3 z4)))
+    (M z5 z6 z7 z8)
+    (DELCL ((M z5 z6 z7 z8)))
+
+    (/* genera nueva delta para el automata concatenacion, esta nueva delta )
+    (/* manda al estado final del automata de la izq. en z8 al estado       )
+    (/* inicial del automata de la derecha en z8.                           )
+
+    (/* Dichos estados eran antes de los cambios z4 y z7 respectivamente )
+
+    (ADDCL ((delta z8 () z3)))
+
+    (/* generar nueva Q, que es union de Q1 en z1 y Q2 en z5, en z20)
+
+    (union z1 z5 z20)
+
+    (/* generar la clausula del nuevo automata M )
+
+    (sigma z23)
+    (ADDCL ((M z20 z23 z7 z4)) 0)
+)
+
+?((/* --------------------------------------------------------------------- ))
+?((/* clausula para tratar el caso de r=r1+r2 con r, r1 y r2 expr. reg.     ))
+?((/* --------------------------------------------------------------------- ))
+
+((suma (x1|x2))
+    (/* verificar si esto es una union )
+
+    (car x2 y1)
+    (EQ y1 +)
+
+    (/* analiza el termino de la izquierda )
+
+    (analiza (x1))
+
+    (/* si lo es, analiza el termino de la derecha )
+
+    (cdr x2 y2)
+    (analiza y2)
+
+    (/* genera nuevo automata M para esta union )
+
+    (/* borra automatas de ambos terminos de la union, antes recupera sus )
+    (/* entradas )
+
+    (M z1 z2 z3 z4)
+    (DELCL ((M z1 z2 z3 z4)))
+    (M z5 z6 z7 z8)
+    (DELCL ((M z5 z6 z7 z8)))
+
+    (/* obten estados inicial y final del automata union )
+
+    (mem-q z9)
+    (saca mem-q z9 y3)
+    (mem-f z10)
+    (saca mem-f z10 y4)
+
+    (/* genera nuevas deltas para el automata union )
+
+    (/* generar delta que del nuevo estado inicial y3 con epsilon va a la )
+    (/* union de los estados iniciales anteriores en z3 y z7 )
+
+    (union (z3) () x10)
+    (union (z7) x10 x11)
+    (ADDCL ((delta y3 () x11)))
+
+    (/* las otras deltas generadas antes permanecen igual )
+    (/* generar deltas que de los estados finales anteriores z4 y z8 vayan )
+    (/* al nuevo estado final y4 con epsilon )
+
+    (ADDCL ((delta z4 () (y4))))
+    (ADDCL ((delta z8 () (y4))))
+
+    (/* generar nueva Q, que es union de Q1 en z1 y Q2 en z5 con los nuevos )
+    (/* estados )
+
+    (union z1 z5 z20)
+    (union (y3) z20 z21)
+    (union (y4) z21 z22)
+
+    (/* generar la clausula del nuevo automata M )
+
+    (sigma z23)
+    (ADDCL ((M z22 z23 y3 y4)) 0)
+)
+
+?((/* --------------------------------------------------------------------- ))
+?((/* clausula para tratar el caso r=r1* con r y r1 expresiones regulares.  ))
+?((/* --------------------------------------------------------------------- ))
+
+((cerradura (x1|x2))
+    (/* verificar si esto es una cerradura )
+
+    (EQ x2 (*))
+
+    (/* analiza el termino de la cerradura )
+
+    (analiza x1)
+
+    (/* genera el automata para la cerradura )
+
+    (/* obtenen terminos del automata generado para la expr. reg a la que )
+    (/* se le esta obteniendo cerradura, y eliminalo )
+
+    (M z1 z2 z3 z4)
+    (DELCL ((M z1 z2 z3 z4)))
+
+    (/* obten nuevos estados inicial y4 y final y5 )
+
+    (mem-q z5)
+    (saca mem-q z5 y4)
+    (mem-f z6)
+    (saca mem-f z6 y5)
+
+    (/* genera nuevas deltas para el automata cerradura )
+
+    (/* genera las deltas que manda del nuevo estado inicial y4 y del estado )
+    (/* final anterior z4 al nuevo estado final y5 y al estado inicial previo )
+    (/* z3 )
+
+    (union (z3) (y5) z7)
+    (ADDCL ((delta y4 () z7)))
+    (ADDCL ((delta z4 () z7)))
+
+    (/* genera nuevo automata M para la cerradura, con Q igual a la union de )
+    (/* el Q anterior con los nuevos estados y4 y y5 )
+
+    (union (y4) (y5) z8)
+    (union z1 z8 z9)
+    (sigma z10)
+    (ADDCL ((M z9 z10 y4 y5)) 0)
+)
+
+?((/* --------------------------------------------------------------------- ))
+?((/* clausulas para analizar la lista de entrada por casos                 ))
+?((/* --------------------------------------------------------------------- ))
+
+((analiza (x1|x2))
+    (/* analiza el caso cerradura de Kleene )
+
+    (cerradura x1)
+    (analiza x2)
+)
+
+((analiza (x1|x2))
+    (/* analiza el caso concatenacion )
+
+    (concatenacion x1)
+    (analiza x2)
+)
+
+((analiza (x1|x2))
+    (/* analiza el caso union )
+
+    (suma x1)
+    (analiza x2)
+)
+
+((analiza (x1|x2))
+    (/* analiza el caso simbolo o epsilon )
+
+    (simbolo x1)
+    (analiza x2)
+)
+
+((analiza ())
+    (/* condicion de paro del analisis recursivo )
+)
+
+((elimina)
+   (/* elimina las clausulas M y delta creadas por una corrida anterior, )
+   (/* para poder realizar otra corrida )
+   (KILL M)
+   (KILL delta)
+)

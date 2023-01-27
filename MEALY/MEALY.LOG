@@ -1,0 +1,26 @@
+?((/* --------------------------------------------------------------------- ))
+?((/*                         Maquina de Mealy                              ))
+?((/* Realizado por: Rodolfo Gonzalez Gonzalez.                             ))
+?((/* --------------------------------------------------------------------- ))
+
+?((/* Carga el archivo de definicion de la maq. de Mealy                    ))
+
+?((LOAD deltas))
+
+((pertenece x (x|y)))
+((pertenece x (y|x1))
+   (pertenece x x1))
+
+?((/* Clausula principal. x=estado inicial, z1z2=cadena a analizar          ))
+
+((Mealy x (z1|z2))
+    (Q z10)
+    (pertenece x z10)
+    (sigma z11)
+    (pertenece z1 z11)
+    (lambda x z1 y1)
+    (PP y1)
+    (delta x z1 y)
+    (Mealy y z2)
+)
+((Mealy x ()))

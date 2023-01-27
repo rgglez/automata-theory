@@ -1,0 +1,13 @@
+((sigma (0 1)))
+((Q (q0 q1 q2)))
+
+((delta q0 0 q0))
+((delta q0 1 q1))
+((delta q1 0 q2))
+((delta q1 1 q0))
+((delta q2 0 q1))
+((delta q2 1 q2))
+
+((lambda q0 0))
+((lambda q1 1))
+((lambda q2 2))

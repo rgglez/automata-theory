@@ -1,0 +1,142 @@
+?((/* --------------------------------------------------------------------- ))
+?((/*      Programa AFD-DOS.LOG para automatas finitos de dos caminos       ))
+?((/* Realizado por: Rodolfo Gonz lez Gonz lez.                             ))
+?((/* --------------------------------------------------------------------- ))
+
+?((/* --------------------------------------------------------------------- ))
+?((/* Carga clausulas para el manejo de listas                              ))
+?((/* --------------------------------------------------------------------- ))
+
+?((LOAD listas))
+
+?((/* --------------------------------------------------------------------- ))
+?((/* Definici¢n del AFD-dos caminos dada por el usuario, ver ejemplo en    ))
+?((/* EJEM.LOG anexo. Dar hecho Q, hecho F, hechos delta                    ))
+?((/* --------------------------------------------------------------------- ))
+
+?((/* --------------------------------------------------------------------- ))
+?((/* obtiene longitud de la cadena de entrada.                             ))
+?((/* --------------------------------------------------------------------- ))
+
+((S 0))
+
+((obt-long (x1|x2))
+    (S x)
+    (SUM x 1 y)
+    (DELCL ((S x)))
+    (ADDCL ((S y)))
+    (obt-long x2)
+)
+
+((obt-long ())
+    (S x)
+    (TIMES 2 x y)
+    (ADDCL ((S2 y)))
+)
+
+?((/* --------------------------------------------------------------------- ))
+?((/* checa la longitud de una secuencia                                    ))
+?((/* --------------------------------------------------------------------- ))
+
+((gen-cads (x1|x2))
+    (gen-cads x2)
+    (ADDCL ((cad (x1|x2) 0)))
+)
+
+((gen-cads ()))
+
+?((/* --------------------------------------------------------------------- ))
+?((/* Consulta la base de hechos                                            ))
+?((/* x1=qi, y1=simbolo, z1=qj, z2=direccion sig. mov.                      ))
+?((/* --------------------------------------------------------------------- ))
+
+((sig x1 y1 z1 z2)
+    (delta x1 y1 (z1|z2))
+)
+
+?((/* --------------------------------------------------------------------- ))
+?((/* Clausulas para las descripciones instantaneas                         ))
+?((/* Actuales: x1=w, y1=qi, x2=x, z1=dir. mov. actual                      ))
+?((/* Siguientes: x10=nueva w, y10=qj, x20=nueva x, z10=nueva direccion     ))
+?((/* --------------------------------------------------------------------- ))
+
+((id x1 y1 x2 z1)
+    (NOT EQ x2 ())
+
+    (car x2 x21)
+    (sig y1 x21 y10 z10)
+    (EQ z10 (R))
+
+    (cad x2 z100)
+    (S2 x100)
+    (LESS z100 x100)
+    (SUM z100 1 z101)
+    (DELCL ((cad x2 z100)))
+    (ADDCL ((cad x2 z101)))
+
+    (append x1 (x21) x10)
+    (cdr x2 x20)
+    (PP x10 y10 x20 z10)
+    (id x10 y10 x20 z10)
+)
+
+((id x1 y1 x2 z1)
+    (NOT EQ x2 ())
+
+    (car x2 x21)
+    (sig y1 x21 y10 z10)
+    (EQ z10 (L))
+
+    (cad x2 z100)
+    (S2 x100)
+    (LESS z100 x100)
+    (SUM z100 1 z101)
+    (DELCL ((cad x2 z100)))
+    (ADDCL ((cad x2 z101)))
+
+    (invierte x1 x11)
+    (cdr x11 x12)
+    (invierte x12 x10)
+    (car x11 x13)
+    (append (x13) x2 x20)
+    (PP x10 y10 x20 z10)
+    (id x10 y10 x20 z10)
+)
+
+((id x1 y1 x2 z1)
+    (NOT EQ x2 ())
+
+    (cad x2 z100)
+    (S2 x100)
+    (EQ z100 x100)
+    (PP La cadena no es aceptada)
+)
+
+((id x1 y1 x2 z1)
+    (EQ x2 ())
+    (F x20)
+    (pertenece y1 x20)
+    (PP La cadena es aceptada)
+)
+
+((id x1 y1 x2 z1)
+    (EQ x2 ())
+    (PP La cadena no es aceptada)
+)
+
+?((/* --------------------------------------------------------------------- ))
+?((/* Hacer la meta con esta clausula, x1=estado inicial, y1=cadena a       ))
+?((/* procesar.                                                             ))
+?((/* --------------------------------------------------------------------- ))
+
+((afd-dos x1 y1)
+    (Q y2)
+    (obt-long y2)
+    (gen-cads y1)
+    (PP x1 y1 (R))
+    (id () x1 y1 (R))
+    (KILL cad)
+    (KILL S)
+    (KILL S2)
+    (ADDCL ((S 0)))
+)
