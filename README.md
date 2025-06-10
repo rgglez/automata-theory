@@ -1,6 +1,6 @@
 # automata-theory
 
-[![CC BY-NC-SA 4.0][cc-by-nc-sa-shield]][cc-by-nc-sa]
+[![CC BY-NC-ND 4.0][cc-by-nc-nd-shield]][cc-by-nc-nd]
 ![GitHub all releases](https://img.shields.io/github/downloads/rgglez/automata-theory/total) 
 ![GitHub issues](https://img.shields.io/github/issues/rgglez/automata-theory) 
 ![GitHub commit activity](https://img.shields.io/github/commit-activity/y/rgglez/automata-theory)
@@ -10,8 +10,6 @@ These are some small programs written in Prolog for a course on [automata theory
 ## License
 
 Copyright 1996 Rodolfo González González.
-
-Shield: [![CC BY-NC-ND 4.0][cc-by-nc-nd-shield]][cc-by-nc-nd]
 
 This work is licensed under a
 [Creative Commons Attribution-NonCommercial-NoDerivs 4.0 International License][cc-by-nc-nd].
